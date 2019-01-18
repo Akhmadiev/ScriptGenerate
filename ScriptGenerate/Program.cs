@@ -1,4 +1,6 @@
-﻿namespace ScriptGenerate
+﻿using System.Security.Cryptography;
+
+namespace ScriptGenerate
 {
     using System;
     using System.Collections.Generic;
@@ -14,6 +16,9 @@
 
         public static void execute()
         {
+            Console.WriteLine("Write size limit:");
+            var limit = int.Parse(Console.ReadLine());
+
             var rnd = new Random();
             var sizevars = new[] {1, 5, 10};
             var sizes = new List<int>();
@@ -21,7 +26,6 @@
             var apf = StartScript();
             var af = StartScript();
 
-            var limit = 20;
             for (var i = 0; i < limit;)
             {
                 var index = rnd.Next(3);
