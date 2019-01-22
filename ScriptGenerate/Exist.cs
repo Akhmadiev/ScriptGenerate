@@ -1,24 +1,22 @@
-﻿namespace ScriptGenerate
+﻿using System.Linq;
+
+namespace ScriptGenerate
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
 
-    class Program
+    public static class Exist
     {
-        static void Main(string[] args)
-        {
-            Exist.Execute();
-        }
-
-        public static void execute()
+        public static void Execute()
         {
             Console.WriteLine("Write size limit:");
             var limit = int.Parse(Console.ReadLine());
 
             var rnd = new Random();
-            var sizevars = new[] {1, 5, 10};
+            var sizevars = new[] { 50, 100, 200, 500, 1024, 2048 };
+            var shortDate = DateTime.Now.ToString("MM.dd.yyyy");
             var sizes = new List<int>();
             var anf = StartScript();
             var apf = StartScript();
@@ -26,13 +24,13 @@
 
             for (var i = 0; i < limit;)
             {
-                var index = rnd.Next(3);
+                var index = rnd.Next(sizevars.Length);
                 var size = sizevars[index];
                 i += size;
 
                 if (i >= limit)
                 {
-                    for (var j = i - size; j < limit; j++)
+                    for (var j = i - size; j < limit; j += sizevars[0])
                     {
                         sizes.Add(sizevars[0]);
                     }
@@ -42,6 +40,8 @@
 
                 sizes.Add(size);
             }
+
+            var sum = sizes.Sum();
 
             var writeCount = 0;
             var readCount = 0;
@@ -55,16 +55,16 @@
 
                 for (var j = writeCount; j < (i >= sizes.Count ? sizes.Count : writeCount + writeRnd); j++)
                 {
-                    anf.AppendLine($@"execute ../hdd/{sizes[j]}gb.db ../anf/{j}_{sizes[j]}gb.db ../result/anfW{sizes[j]}gb.txt ../result/anfWTotal.txt {sizes[j]}gb.db");
-                    apf.AppendLine($@"execute ../hdd/{sizes[j]}gb.db ../apf/{j}_{sizes[j]}gb.db ../result/apfW{sizes[j]}gb.txt ../result/apfWTotal.txt {sizes[j]}gb.db");
-                    af.AppendLine($@"execute ../hdd/{sizes[j]}gb.db ../af/{j}_{sizes[j]}gb.db ../result/afW{sizes[j]}gb.txt ../result/afWTotal.txt {sizes[j]}gb.db");
+                    anf.AppendLine($@"execute ../hdd/{sizes[j]}mb.db ../anf/add.db ../result/{shortDate}_anfW{sizes[j]}mb.txt ../result/{shortDate}_anfWTotal.txt {sizes[j]}mb.db");
+                    apf.AppendLine($@"execute ../hdd/{sizes[j]}mb.db ../apf/add.db ../result/{shortDate}_apfW{sizes[j]}mb.txt ../result/{shortDate}_apfWTotal.txt {sizes[j]}mb.db");
+                    af.AppendLine($@"execute ../hdd/{sizes[j]}mb.db ../af/add.db ../result/{shortDate}_afW{sizes[j]}mb.txt ../result/{shortDate}_afWTotal.txt {sizes[j]}mb.db");
                 }
 
                 for (var j = readCount; j < (i >= sizes.Count ? sizes.Count : readCount + readRnd); j++)
                 {
-                    anf.AppendLine($@"execute ../anf/{j}_{sizes[j]}gb.db ../hdd/anf/{j}_{sizes[j]}gb.db ../result/anfR{sizes[j]}gb.txt ../result/anfRTotal.txt {sizes[j]}gb.db");
-                    apf.AppendLine($@"execute ../apf/{j}_{sizes[j]}gb.db ../hdd/apf/{j}_{sizes[j]}gb.db ../result/apfR{sizes[j]}gb.txt ../result/apfRTotal.txt {sizes[j]}gb.db");
-                    af.AppendLine($@"execute ../af/{j}_{sizes[j]}gb.db ../hdd/af/{j}_{sizes[j]}gb.db ../result/afR{sizes[j]}gb.txt ../result/afRTotal.txt {sizes[j]}gb.db");
+                    anf.AppendLine($@"execute ../anf/{sizes[j]}mb.db  ../hdd/anf/add.db ../result/{shortDate}_anfR{sizes[j]}mb.txt ../result/{shortDate}_anfRTotal.txt {sizes[j]}mb.db");
+                    apf.AppendLine($@"execute ../apf/{sizes[j]}mb.db  ../hdd/apf/add.db ../result/{shortDate}_apfR{sizes[j]}mb.txt ../result/{shortDate}_apfRTotal.txt {sizes[j]}mb.db");
+                    af.AppendLine($@"execute  ../af/{sizes[j]}mb.db  ../hdd/af/add.db ../result/{shortDate}_afR{sizes[j]}mb.txt ../result/{shortDate}_afRTotal.txt {sizes[j]}mb.db");
                 }
 
                 if (i >= sizes.Count)
@@ -76,17 +76,29 @@
                 readCount += readRnd;
             }
 
-            using (var write = new StreamWriter(@"C:\scripts\anf.txt"))
+
+            var targetPath = @"C:\scripts\existing";
+            if (!Directory.Exists(targetPath))
+            {
+                if (!Directory.Exists(@"C:\scripts"))
+                {
+                    Directory.CreateDirectory(@"C:\scripts");
+                }
+
+                Directory.CreateDirectory(targetPath);
+            }
+
+            using (var write = new StreamWriter($@"{targetPath}\anf.txt"))
             {
                 write.WriteLine(anf.ToString());
             }
 
-            using (var write = new StreamWriter(@"C:\scripts\apf.txt"))
+            using (var write = new StreamWriter($@"{targetPath}\apf.txt"))
             {
                 write.WriteLine(apf.ToString());
             }
 
-            using (var write = new StreamWriter(@"C:\scripts\af.txt"))
+            using (var write = new StreamWriter($@"{targetPath}\af.txt"))
             {
                 write.WriteLine(af.ToString());
             }
@@ -102,7 +114,7 @@
                         "\t size=$5\n" +
                         "\t currentDate=$(date +\"%T\")\n" +
                         "\t ts=$(date +%s%N)\n" +
-                        "\t cp $from $to\n" +
+                        "\t cat $from >> $to\n" +
                         "\t tt=$((($(date +%s%N) - $ts)/ 1000000))\n" +
                         "\t echo \"$currentDate $tt\" >> $result\n" +
                         "\t echo \"$currentDate $tt $size\" >> $resultTotal\n" +
