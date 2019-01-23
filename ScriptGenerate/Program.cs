@@ -9,7 +9,7 @@
     {
         static void Main(string[] args)
         {
-            Exist.Execute();
+            execute();
         }
 
         public static void execute()
@@ -18,7 +18,7 @@
             var limit = int.Parse(Console.ReadLine());
 
             var rnd = new Random();
-            var sizevars = new[] {1, 5, 10};
+            var sizevars = new[] {1};
             var sizes = new List<int>();
             var anf = StartScript();
             var apf = StartScript();
@@ -26,7 +26,7 @@
 
             for (var i = 0; i < limit;)
             {
-                var index = rnd.Next(3);
+                var index = rnd.Next(sizevars.Length);
                 var size = sizevars[index];
                 i += size;
 
@@ -102,7 +102,7 @@
                         "\t size=$5\n" +
                         "\t currentDate=$(date +\"%T\")\n" +
                         "\t ts=$(date +%s%N)\n" +
-                        "\t cp $from $to\n" +
+                        "\t cat $from > $to\n" +
                         "\t tt=$((($(date +%s%N) - $ts)/ 1000000))\n" +
                         "\t echo \"$currentDate $tt\" >> $result\n" +
                         "\t echo \"$currentDate $tt $size\" >> $resultTotal\n" +
